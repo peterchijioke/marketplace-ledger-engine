@@ -5,7 +5,7 @@
 [![npm version](https://img.shields.io/npm/v/marketplace-ledger-engine.svg)](https://www.npmjs.com/package/marketplace-ledger-engine)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 
-Marketplace platforms (food delivery, ride-hailing, e-commerce, services) fail audits when they handle multi-party payouts using simple database updates (e.g. `vendor.balance += amount`). 
+Marketplace platforms (food delivery, ride-hailing, e-commerce, services) fail audits when they handle multi-party payouts using simple database updates (e.g. `vendor.balance += amount`).
 
 `marketplace-ledger-engine` provides a mathematical double-entry accounting engine ensuring **$\sum \text{Debits} = \sum \text{Credits}$** across customers, merchants, couriers, platform commissions, service fees, promotions, and tax liabilities.
 
@@ -32,28 +32,29 @@ npm install marketplace-ledger-engine
 ## Quick Start
 
 ### 1. Distribute Funds on Order Checkout
+
 ```typescript
-import { distributeOrderFunds } from 'marketplace-ledger-engine';
+import { distributeOrderFunds } from "marketplace-ledger-engine";
 
 const result = distributeOrderFunds({
-  orderId: 'ORD-10923',
-  currency: 'USD',
-  subTotal: 50.00,
-  deliveryFee: 5.00,
-  tipAmount: 4.00,
-  serviceFee: 3.50,
-  smallOrderFee: 2.00,
-  discount: 5.00,
-  discountFunder: 'MERCHANT',
+  orderId: "ORD-10923",
+  currency: "USD",
+  subTotal: 50.0,
+  deliveryFee: 5.0,
+  tipAmount: 4.0,
+  serviceFee: 3.5,
+  smallOrderFee: 2.0,
+  discount: 5.0,
+  discountFunder: "MERCHANT",
   taxAmount: 4.12,
   isTaxInclusive: false,
-  taxLiabilityType: 'MARKETPLACE',
-  merchantCommissionRate: 0.20, // 20%
-  courierBasePay: 3.50,
-  merchantId: 'merchant_99',
-  merchantName: 'Burger Kitchen',
-  courierId: 'rider_42',
-  courierName: 'John Courier',
+  taxLiabilityType: "MARKETPLACE",
+  merchantCommissionRate: 0.2, // 20%
+  courierBasePay: 3.5,
+  merchantId: "merchant_99",
+  merchantName: "Burger Kitchen",
+  courierId: "rider_42",
+  courierName: "John Courier",
 });
 
 console.log(result.splits);
@@ -82,13 +83,14 @@ console.log(result.journal.lines);
 ```
 
 ### 2. Create a Balanced Refund Journal
+
 ```typescript
-import { createRefundJournal } from 'marketplace-ledger-engine';
+import { createRefundJournal } from "marketplace-ledger-engine";
 
 const refundJournal = createRefundJournal(result.journal, {
-  refundAmount: 15.00,
-  reason: 'Customer cancelled item',
-  refundFrom: 'MERCHANT',
+  refundAmount: 15.0,
+  reason: "Customer cancelled item",
+  refundFrom: "MERCHANT",
 });
 
 console.log(refundJournal.lines);
@@ -100,4 +102,4 @@ console.log(refundJournal.lines);
 
 ## License
 
-MIT © [Peter Chukwu](https://github.com/petechukwu)
+MIT © [Peter Chijioke](https://github.com/peterchijioke)
