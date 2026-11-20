@@ -1,6 +1,14 @@
 {
   "name": "@peterchijioke/marketplace-ledger-engine",
-  "version": "1.0.0",
+  "version": "1.0.2",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/peterchijioke/marketplace-ledger-engine.git"
+  },
+  "homepage": "https://github.com/peterchijioke/marketplace-ledger-engine#readme",
+  "bugs": {
+    "url": "https://github.com/peterchijioke/marketplace-ledger-engine/issues"
+  },
   "description": "Fault-tolerant double-entry accounting and multi-split fund distribution engine for marketplaces, platforms, and fintechs.",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
