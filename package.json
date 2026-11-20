@@ -1,5 +1,5 @@
 {
-  "name": "marketplace-ledger-engine",
+  "name": "@peterchijioke/marketplace-ledger-engine",
   "version": "1.0.0",
   "description": "Fault-tolerant double-entry accounting and multi-split fund distribution engine for marketplaces, platforms, and fintechs.",
   "main": "./dist/index.js",
