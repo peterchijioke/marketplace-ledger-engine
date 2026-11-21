@@ -1,8 +1,10 @@
 # marketplace-ledger-engine
 
-> **Fault-tolerant double-entry accounting and multi-split fund distribution engine for marketplaces, platforms, and fintechs.**
+> **Fault-tolerant double-entry accounting and multi-split fund distribution engine for marketplaces, platforms, and fintechs.**  
+> *Available in both **Go (Golang)** and **TypeScript / Node.js**.*
 
-[![npm version](https://img.shields.io/npm/v/marketplace-ledger-engine.svg)](https://www.npmjs.com/package/marketplace-ledger-engine)
+[![Go Reference](https://pkg.go.dev/badge/github.com/peterchijioke/marketplace-ledger-engine.svg)](https://pkg.go.dev/github.com/peterchijioke/marketplace-ledger-engine)
+[![npm version](https://img.shields.io/npm/v/@peterchijioke/marketplace-ledger-engine.svg)](https://www.npmjs.com/package/@peterchijioke/marketplace-ledger-engine)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 
 Marketplace platforms (food delivery, ride-hailing, e-commerce, services) fail audits when they handle multi-party payouts using simple database updates (e.g. `vendor.balance += amount`).
@@ -13,93 +15,110 @@ Marketplace platforms (food delivery, ride-hailing, e-commerce, services) fail a
 
 ## Features
 
-- ⚖️ **Mathematical Equilibrium Invariant**: Guaranteed zero floating-point drift (`round2`). Refuses unbalanced journals.
+- ⚖️ **Mathematical Equilibrium Invariant**: Guaranteed zero floating-point drift (`Round2`). Refuses unbalanced journals.
 - 🍕 **Multi-Party Splitter**: Splits order subtotal into Merchant Payout, Platform Commission, Courier Pay, Delivery Markup, Service Fees, and Tips.
 - 🎯 **Promotion & Discount Subsidy**: Automatically handles who funds discounts (merchant vs. platform) without breaking ledger balance.
-- 🏛️ **Tax Isolation**: Handles Marketplace Facilitator sales tax (`TAX_PAYABLE`), merchant tax pass-through, and tax-inclusive pricing (e.g., VAT markets).
+- 🏛️ **Tax Isolation**: Handles Marketplace Facilitator sales tax (`TAX_PAYABLE`), merchant tax pass-through, and tax-inclusive pricing (e.g., Nigerian 7.5% VAT).
 - 🔄 **Idempotent Refund Journals**: Generates balanced partial or full refund reversal journals.
+- 🚀 **Zero Dependencies**: Pure Go and pure TypeScript with zero third-party dependencies.
 
 ---
 
 ## Installation
 
+### For Go (Golang)
 ```bash
-npm install marketplace-ledger-engine
+go get github.com/peterchijioke/marketplace-ledger-engine
+```
+
+### For Node.js / TypeScript
+```bash
+npm install @peterchijioke/marketplace-ledger-engine
 ```
 
 ---
 
-## Quick Start
+## Go (Golang) Quick Start
 
-### 1. Distribute Funds on Order Checkout
+```go
+package main
+
+import (
+	"fmt"
+	"log"
+
+	ledgerengine "github.com/peterchijioke/marketplace-ledger-engine"
+)
+
+func main() {
+	result, err := ledgerengine.DistributeOrderFunds(ledgerengine.SplitOrderInput{
+		OrderID:                "ORD-10923",
+		Currency:               "USD",
+		SubTotal:               50.00,
+		DeliveryFee:            5.00,
+		TipAmount:              4.00,
+		ServiceFee:             3.50,
+		SmallOrderFee:          2.00,
+		Discount:               5.00,
+		DiscountFunder:         "MERCHANT",
+		TaxAmount:              4.12,
+		IsTaxInclusive:         false,
+		TaxLiabilityType:       "MARKETPLACE",
+		MerchantCommissionRate: 0.20, // 20%
+		CourierBasePay:         3.50,
+		MerchantID:             "merchant_99",
+		MerchantName:           "Burger Kitchen",
+		CourierID:              "rider_42",
+		CourierName:            "John Courier",
+	})
+	if err != nil {
+		log.Fatalf("Ledger distribution error: %v", err)
+	}
+
+	fmt.Printf("Gross Customer Paid: $%.2f\n", result.Splits.GrossCustomerPaid) // $63.62
+	fmt.Printf("Merchant Net Payout:  $%.2f\n", result.Splits.MerchantPay)       // $35.00
+	fmt.Printf("Courier Payout:        $%.2f\n", result.Splits.CourierPay)        // $7.50
+	fmt.Printf("Platform Commission:   $%.2f\n", result.Splits.PlatformCommission) // $10.00
+	fmt.Printf("Tax Payable:           $%.2f\n", result.Splits.TaxLiability)       // $4.12
+
+	// Verified balanced double-entry lines
+	for _, line := range result.Journal.Lines {
+		fmt.Printf("%-6s %-20s $%.2f (%s)\n", line.Direction, line.AccountType, line.Amount, line.Description)
+	}
+}
+```
+
+---
+
+## TypeScript / Node.js Quick Start
 
 ```typescript
-import { distributeOrderFunds } from "marketplace-ledger-engine";
+import { distributeOrderFunds, createRefundJournal } from '@peterchijioke/marketplace-ledger-engine';
 
 const result = distributeOrderFunds({
-  orderId: "ORD-10923",
-  currency: "USD",
-  subTotal: 50.0,
-  deliveryFee: 5.0,
-  tipAmount: 4.0,
-  serviceFee: 3.5,
-  smallOrderFee: 2.0,
-  discount: 5.0,
-  discountFunder: "MERCHANT",
+  orderId: 'ORD-10923',
+  currency: 'USD',
+  subTotal: 50.00,
+  deliveryFee: 5.00,
+  tipAmount: 4.00,
+  serviceFee: 3.50,
+  smallOrderFee: 2.00,
+  discount: 5.00,
+  discountFunder: 'MERCHANT',
   taxAmount: 4.12,
   isTaxInclusive: false,
-  taxLiabilityType: "MARKETPLACE",
-  merchantCommissionRate: 0.2, // 20%
-  courierBasePay: 3.5,
-  merchantId: "merchant_99",
-  merchantName: "Burger Kitchen",
-  courierId: "rider_42",
-  courierName: "John Courier",
+  taxLiabilityType: 'MARKETPLACE',
+  merchantCommissionRate: 0.20,
+  courierBasePay: 3.50,
+  merchantId: 'merchant_99',
+  courierId: 'rider_42',
 });
 
 console.log(result.splits);
-// {
-//   grossCustomerPaid: 63.62,
-//   merchantPay: 35.00,
-//   courierPay: 7.50,
-//   platformCommission: 10.00,
-//   platformServiceFee: 3.50,
-//   platformSmallOrderFee: 2.00,
-//   platformDeliverySpread: 1.50,
-//   taxLiability: 4.12,
-//   totalPlatformEarnings: 17.00
-// }
-
-console.log(result.journal.lines);
-// Balanced Double-Entry Journal Lines:
-// DEBIT  PSP_CLEARING        $63.62
-// CREDIT MERCHANT_WALLET     $35.00
-// CREDIT COURIER_WALLET      $7.50
-// CREDIT PLATFORM_REVENUE    $10.00 (Commission)
-// CREDIT PLATFORM_REVENUE    $3.50  (Service fee)
-// CREDIT PLATFORM_REVENUE    $2.00  (Small order fee)
-// CREDIT PLATFORM_REVENUE    $1.50  (Delivery spread)
-// CREDIT TAX_PAYABLE         $4.12  (Marketplace sales tax)
-```
-
-### 2. Create a Balanced Refund Journal
-
-```typescript
-import { createRefundJournal } from "marketplace-ledger-engine";
-
-const refundJournal = createRefundJournal(result.journal, {
-  refundAmount: 15.0,
-  reason: "Customer cancelled item",
-  refundFrom: "MERCHANT",
-});
-
-console.log(refundJournal.lines);
-// DEBIT  MERCHANT_WALLET     $15.00
-// CREDIT CUSTOMER_WALLET     $15.00
 ```
 
 ---
 
 ## License
 
-MIT © [Peter Chijioke](https://github.com/peterchijioke)
+MIT © [Peter Chukwu](https://github.com/peterchijioke)
